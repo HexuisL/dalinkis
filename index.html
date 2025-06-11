@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="lt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dalinkis Daiktais – Rask & Dalinkis</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(120deg, #dbeafe, #fef9c3);
+      padding: 20px;
+      margin: 0;
+    }
+    h1 {
+      color: #1e3a8a;
+      font-size: 2.5em;
+      text-align: center;
+    }
+    form {
+      background: #ffffffdd;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    input, textarea, select {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    button {
+      padding: 12px 20px;
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      margin-top: 10px;
+      cursor: pointer;
+    }
+    .item {
+      background: white;
+      padding: 16px;
+      margin: 20px auto;
+      border-radius: 10px;
+      max-width: 600px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    }
+    .item img {
+      max-width: 100%;
+      border-radius: 6px;
+      margin-top: 10px;
+    }
+    .dark-mode {
+      background: #1f2937;
+      color: #f3f4f6;
+    }
+    .dark-mode form, .dark-mode .item {
+      background: #374151;
+      color: #f3f4f6;
+    }
+    #modeToggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 10px;
+      background: #111827;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <button id="modeToggle">🌙 / ☀️</button>
+  <h1>📦 Dalinkis Daiktais – Rask & Dalinkis!</h1>
+
+  <form id="itemForm">
+    <input type="text" placeholder="Daikto pavadinimas" id="title" required />
+    <textarea placeholder="Trumpas aprašymas" id="description" required></textarea>
+    <input type="text" placeholder="Google Maps nuoroda" id="location" required />
+    <select id="category">
+      <option value="baldai">🪑 Baldai</option>
+      <option value="elektronika">🔌 Elektronika</option>
+      <option value="drabuziai">👕 Drabužiai</option>
+      <option value="kita">🔧 Kita</option>
+    </select>
+    <input type="file" id="image" accept="image/*" required />
+    <button type="submit">📤 Įkelti daiktą</button>
+  </form>
+
+  <div id="items"></div>
+
+  <script>
+    const form = document.getElementById("itemForm");
+    const itemsContainer = document.getElementById("items");
+    const modeToggle = document.getElementById("modeToggle");
+    let items = JSON.parse(localStorage.getItem("dalinkis_items")) || [];
+
+    function renderItems() {
+      itemsContainer.innerHTML = "";
+      items.forEach((item, index) => {
+        const itemHTML = `
+          <div class="item">
+            <h2>${item.title} (${item.category})</h2>
+            <img src="${item.imageUrl}" alt="Daikto nuotrauka" />
+            <p>${item.description}</p>
+            <a href="${item.location}" target="_blank">🗺️ Žiūrėti vietą</a><br />
+            <button onclick="deleteItem(${index})">❌ Pašalinti</button>
+          </div>`;
+        itemsContainer.innerHTML += itemHTML;
+      });
+    }
+
+    function deleteItem(index) {
+      items.splice(index, 1);
+      localStorage.setItem("dalinkis_items", JSON.stringify(items));
+      renderItems();
+    }
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      const title = document.getElementById("title").value;
+      const description = document.getElementById("description").value;
+      const location = document.getElementById("location").value;
+      const category = document.getElementById("category").value;
+      const imageInput = document.getElementById("image");
+      const reader = new FileReader();
+
+      reader.onload = function () {
+        const imageUrl = reader.result;
+        const newItem = { title, description, location, imageUrl, category };
+        items.push(newItem);
+        localStorage.setItem("dalinkis_items", JSON.stringify(items));
+        renderItems();
+        form.reset();
+        alert("✅ Daiktas įkeltas!");
+      };
+
+      if (imageInput.files[0]) {
+        reader.readAsDataURL(imageInput.files[0]);
+      }
+    });
+
+    modeToggle.addEventListener("click", () => {
+      document.body.classList.toggle("dark-mode");
+    });
+
+    renderItems();
+  </script>
+</body>
+</html>
